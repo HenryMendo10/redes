@@ -23,20 +23,24 @@ class Bloque:
         }, sort_keys=True).encode()
         return hashlib.sha256(bloque_str).hexdigest()
 
+    def minar_bloque(self, dificultad):
+        patron_objetivo = '0' * dificultad
+        while not self.hash.startswith(patron_objetivo):
+            self.nonce += 1
+            self.hash = self.calcular_hash()
+
 class CadenaBloques:
     def __init__(self, dificultad):
         self.cadena = [self.crear_bloque_genesis()]
         self.dificultad = dificultad
 
     def crear_bloque_genesis(self):
-        # Se crea el primer bloque de la cadena (bloque génesis)
         return Bloque(0, int(datetime.now().timestamp()), [])
 
     def obtener_ultimo_bloque(self):
         return self.cadena[-1]
 
     def agregar_transaccion(self, transaccion):
-        # Agregar la transacción al bloque pendiente
         self.obtener_ultimo_bloque().transacciones.append(transaccion)
 
     def minar_transacciones_pendientes(self, minero):
@@ -48,4 +52,5 @@ class CadenaBloques:
             nonce=0,
             hash_anterior=ultimo_bloque.hash
         )
+        nuevo_bloque.minar_bloque(self.dificultad)
         self.cadena.append(nuevo_bloque)
